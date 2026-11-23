@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.3.2
+
+- Stop using the deprecated `device_registry.async_get_device` (stops working in Home Assistant 2027.8.0); devices are looked up per config entry
+- Stop reading `DeviceInfo` like a dict (stops working in Home Assistant 2027.12.0)
+- Removing the entities of an unmonitored device or interface no longer fails when the device is not in the registry
+
 ## 2.3.1
 
 - Replace the deprecated `via_device` in the device info with `via_device_id` (`via_device` stops working in Home Assistant 2027.8.0)
