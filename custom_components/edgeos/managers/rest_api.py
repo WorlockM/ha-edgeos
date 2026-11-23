@@ -315,19 +315,17 @@ class RestAPI:
 
                 response.raise_for_status()
 
-                logged_in = True  # EdgeOS 3.x: assume success after HTTP 200; subsequent calls will fail if unauthenticated
-                _LOGGER.debug("LOGIN: logged_in=%s -> proceeding to _load_system_data()", logged_in)
-                try:
-                    self._set_status(ConnectivityStatus.Connected)
-                    await self._load_system_data()
-                    self._update_interfaces_from_system_cache()
-                except Exception as ex:
-                    _LOGGER.debug("LOGIN: post-login chain failed: %r", ex, exc_info=True)
-
+                logged_in = (
+                    self.beaker_session_id is not None
+                    and self.beaker_session_id == self.session_id
+                )
 
                 if logged_in:
                     html = await response.text()
                     html_lines = html.splitlines()
+                    # Newer EdgeOS firmware no longer exposes EDGE.DeviceModel in
+                    # the login page; the product name is optional, so connect
+                    # whenever the session is valid.
                     for line in html_lines:
                         if "EDGE.DeviceModel" in line:
                             line_parts = line.split(" = ")
@@ -335,12 +333,15 @@ class RestAPI:
                             self.data[API_DATA_PRODUCT] = value.replace(
                                 "'", EMPTY_STRING
                             )
-                            self.data[API_DATA_SESSION_ID] = self.session_id
-                            self.data[API_DATA_COOKIES] = self._cookies
-
-                            self._set_status(ConnectivityStatus.Connected)
-
                             break
+
+                    self.data[API_DATA_SESSION_ID] = self.session_id
+                    self.data[API_DATA_COOKIES] = self._cookies
+
+                    # The Connected status makes the coordinator call update(),
+                    # which loads the system data and derives the interface
+                    # names from it (_load_system_data).
+                    self._set_status(ConnectivityStatus.Connected)
                 else:
                     _LOGGER.error("Failed to login, Invalid credentials")
 
@@ -487,15 +488,16 @@ class RestAPI:
         try:
             if self.status == ConnectivityStatus.Connected:
                 result_json = await self._async_get(API_URL_DATA, action=API_GET)
-                # EdgeOS 3.x: capture SESSION_ID from get.json for WS
+                # EdgeOS 3.x: get.json carries a SESSION_ID for the websocket;
+                # use it only when the login did not provide one.
                 try:
-                    sid = result_json.get("SESSION_ID") if isinstance(result_json, dict) else None
-                    if sid:
-                        # Do NOT assign to self.session_id (read-only)
-                        try:
-                            self.data[API_DATA_SESSION_ID] = sid
-                        except Exception:
-                            pass
+                    sid = (
+                        result_json.get("SESSION_ID")
+                        if isinstance(result_json, dict)
+                        else None
+                    )
+                    if sid and not self.data.get(API_DATA_SESSION_ID):
+                        self.data[API_DATA_SESSION_ID] = sid
                 except Exception as ex:
                     _LOGGER.debug("SYS: failed to capture SESSION_ID: %r", ex, exc_info=True)
 
