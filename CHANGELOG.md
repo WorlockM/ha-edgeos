@@ -1,5 +1,21 @@
 # Changelog
 
+## 2.3.0 (WorlockM fork)
+
+- Fix login on EdgeOS 3.x: connect whenever the session is valid, even when the login page has no `EDGE.DeviceModel`, instead of assuming success after any HTTP 200
+- Only use the `SESSION_ID` from `get.json` when the login did not provide one
+- Remove deprecated `CONNECTION_CLASS` from the config flow (removed in Home Assistant 2027.5)
+- Import `StrEnum` from the standard library instead of `homeassistant.const`
+- Restore debug logging removed in 2.2.0, log swallowed errors as warnings
+- Minimum Home Assistant version is now 2024.7.0
+- Point metadata and documentation to the fork
+
+## 2.2.0 (marosmars fork)
+
+- EdgeOS 3.x login and interface discovery fixes
+- Support VLAN subinterfaces (`ethX.V`, `switchX.V`)
+- Bundle the `custom:edgerouter-card` Lovelace card
+
 ## 2.1.9
 
 - Initialize data using `async_request_refresh` instead of `async_config_entry_first_refresh` to remove warning message

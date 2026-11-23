@@ -1,32 +1,54 @@
 # EdgeOS
 
-## Maintenance Notice
+## About this fork
 
-This integration is no longer actively developed, as I no longer have access to my ER4 for testing.  
-However, I will review and approve community contributions (issues and pull requests) if they are tested and confirmed to work.  
+This is a fork of the EdgeOS integration for Home Assistant, maintained for routers running **EdgeOS 3.x** firmware.
 
-If you rely on this integration, please consider contributing fixes and improvements.  
-pull requests are welcome!
+It builds on the work of:
+
+- [elad-bar/ha-edgeos](https://github.com/elad-bar/ha-edgeos), the original integration
+- [marosmars/ha-edgeos](https://github.com/marosmars/ha-edgeos), which added EdgeOS 3.x fixes, VLAN subinterfaces and the bundled dashboard card
+
+Many thanks to both. Please report problems with this fork in [this repository's issues](https://github.com/WorlockM/ha-edgeos/issues), not upstream.
+
+What this fork adds on top of upstream v2.1.9:
+
+- **EdgeOS 3.x login**: the 3.x login page no longer contains `EDGE.DeviceModel`. The original code only marked the connection as established when that line was present, so all entities stayed `unavailable`. The product name is now optional and the session is used whenever the login is valid.
+- **Interface discovery on EdgeOS 3.x**: interface names are derived from the router configuration.
+- **VLAN subinterfaces** (`ethX.V`, `switchX.V`): description and address come from the router config,
+  rates/traffic from the stats stream. Entities are named like the parent, e.g. `sensor.<router>_interface_eth1_40_received_rate`.
+- **Bundled Lovelace card** `custom:edgerouter-card` (header with CPU/RAM/WAN, front panel with ports, tunnel and VLAN chips,
+  unknown devices, enable/disable/restart actions). It is served by the integration and loaded on every dashboard, no resource needed.
+  Options: `prefix`, `wan` (eth0), `sfp` ([eth3]), `protect` ([eth0, eth1]), `accent`.
+- Removal of the deprecated `CONNECTION_CLASS` (stops working in Home Assistant 2027.5) and clearer warnings when something fails.
 
 ## Description
 
 Provides an integration between EdgeOS (Ubiquiti) routers to Home Assistant.
 
-[Changelog](https://github.com/elad-bar/ha-edgeos/blob/master/CHANGELOG.md)
+[Changelog](https://github.com/WorlockM/ha-edgeos/blob/master/CHANGELOG.md)
 
 ## How to
 
 #### Requirements
 
-- EdgeRouter with at least firmware version 2.0
+- EdgeRouter with at least firmware version 2.0 (this fork targets EdgeOS 3.x)
+- Home Assistant 2024.7 or newer
 - EdgeRouter User with 'Operator' level access or higher
 - Traffic Analysis set to 'Enabled' (both `dpi` and `export` enabled under `system/traffic-analysis`)
 - To enable / disable interfaces an `admin` role is a required
 
 #### Installations via HACS
 
-- In HACS, look for "Ubiquiti EdgeOS Routers" and install and restart
-- In Settings --> Devices & Services - (Lower Right) "Add Integration"
+This fork is not in the default HACS store, add it as a custom repository:
+
+- In HACS, open the menu (3 dots, top right) -> "Custom repositories"
+- Repository: `https://github.com/WorlockM/ha-edgeos`, Type: "Integration", then "Add"
+- Search for "EdgeOS" in HACS, download this fork and restart Home Assistant
+- In Settings --> Devices & Services - (Lower Right) "Add Integration" -> `EdgeOS`
+
+The original integration and this fork both use the `edgeos` domain and cannot be installed side by side.
+If the original is installed through HACS, remove it from HACS before downloading this fork.
 
 #### Setup
 
@@ -134,7 +156,7 @@ logger:
 
 In Settings -> Devices & services, look for the device, click on the 3 dots menu and download diagnostic file,
 
-Diagnostic file contains sensitive details, go over it and clean it or send it directly to my [email](elad.bar@hotmail)
+Diagnostic file contains sensitive details, go over it and remove them before attaching it to an [issue](https://github.com/WorlockM/ha-edgeos/issues)
 
 ### Known issues and workarounds
 
@@ -146,14 +168,3 @@ In case the following error appear:
 Before opening an issue, please try to remove integration from `Settings -> Devices & services`,
 
 Restart HA and try to add again, if still happen, open an issue and provide log with debug level as described above.
-
-## marosmars fork
-
-Changes on top of upstream v2.1.9:
-
-- EdgeOS 3.x login and interface discovery fixes (imported from a long-running local install).
-- VLAN subinterfaces (`ethX.V`, `switchX.V`) are supported: description and address come from the router config,
-  rates/traffic from the stats stream. Entities are named like the parent, e.g. `sensor.<router>_interface_eth1_40_received_rate`.
-- Bundled Lovelace card `custom:edgerouter-card` (header with CPU/RAM/WAN, front panel with ports, tunnel and VLAN chips,
-  unknown devices, enable/disable/restart actions). It is served by the integration and loaded on every dashboard, no resource needed.
-  Options: `prefix`, `wan` (eth0), `sfp` ([eth3]), `protect` ([eth0, eth1]), `accent`.
