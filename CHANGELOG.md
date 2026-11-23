@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.1
+
+- Replace the deprecated `via_device` in the device info with `via_device_id` (`via_device` stops working in Home Assistant 2027.8.0)
+- Minimum Home Assistant version is now 2026.8.0
+
 ## 2.3.0 (WorlockM fork)
 
 - Fix login on EdgeOS 3.x: connect whenever the session is valid, even when the login page has no `EDGE.DeviceModel`, instead of assuming success after any HTTP 200
