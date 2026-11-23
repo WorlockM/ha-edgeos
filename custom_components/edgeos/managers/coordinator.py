@@ -406,6 +406,15 @@ class Coordinator(DataUpdateCoordinator):
 
         return device_info
 
+    def get_device_name(
+        self,
+        entity_description: IntegrationEntityDescription,
+        item_id: str | None = None,
+    ) -> str:
+        processor = self._processors[entity_description.device_type]
+
+        return processor.get_device_name(item_id)
+
     def _get_via_device_id(self, processor: BaseProcessor) -> str | None:
         """Return the registry id of the parent (system) device, if registered.
 
@@ -466,17 +475,15 @@ class Coordinator(DataUpdateCoordinator):
         self, device_type: DeviceTypes, item_id: str | None = None
     ) -> set[tuple[str, str]]:
         if device_type == DeviceTypes.DEVICE:
-            device_info = self._device_processor.get_device_info(item_id)
+            identifier = self._device_processor.get_device_identifier(item_id)
 
         elif device_type == DeviceTypes.INTERFACE:
-            device_info = self._interface_processor.get_device_info(item_id)
+            identifier = self._interface_processor.get_device_identifier(item_id)
 
         else:
-            device_info = self._system_processor.get_device_info()
+            identifier = self._system_processor.get_device_identifier()
 
-        identifiers = device_info.get("identifiers")
-
-        return identifiers
+        return {identifier}
 
     def get_device_data(self, model: str, identifiers: set[tuple[str, str]]):
         if model == str(DeviceTypes.DEVICE):
@@ -942,22 +949,25 @@ class Coordinator(DataUpdateCoordinator):
                 key = f"{device_type_item} {item_id}"
 
                 if is_device:
-                    device_info = self._device_processor.get_device_info(item_id)
+                    identifier = self._device_processor.get_device_identifier(item_id)
 
                 else:
-                    device_info = self._interface_processor.get_device_info(item_id)
+                    identifier = self._interface_processor.get_device_identifier(
+                        item_id
+                    )
 
-                _LOGGER.debug(f"Refreshing {device_type_item} {key}: {device_info}")
+                _LOGGER.debug(f"Refreshing {device_type_item} {key}: {identifier}")
 
-                device_info_identifier = device_info.get("identifiers")
-                device_data = device_registry.async_get_device(
-                    identifiers=device_info_identifier
+                device_data = device_registry.async_get_device_by_identifier(
+                    identifier, self._config_manager.entry_id
                 )
-                device_id = device_data.id
 
-                entities = entity_registry.entities.get_entries_for_device_id(device_id)
-                for entity in entities:
-                    entity_registry.async_remove(entity.entity_id)
+                if device_data is not None:
+                    entities = entity_registry.entities.get_entries_for_device_id(
+                        device_data.id
+                    )
+                    for entity in entities:
+                        entity_registry.async_remove(entity.entity_id)
 
                 self._discovered_objects.remove(key)
 

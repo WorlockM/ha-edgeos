@@ -1,8 +1,6 @@
 import logging
 import sys
 
-from homeassistant.helpers.device_registry import DeviceInfo
-
 from ..common.consts import (
     API_DATA_DHCP_LEASES,
     API_DATA_SYSTEM,
@@ -66,15 +64,10 @@ class DeviceProcessor(BaseProcessor):
 
         return interface_data
 
-    def get_device_info(
-        self, item_id: str | None = None, via_device_id: str | None = None
-    ) -> DeviceInfo:
+    def _get_device_key(self, item_id: str | None = None) -> str | None:
         device = self.get_data(item_id)
-        device_name = self._get_device_info_name(device.hostname)
 
-        unique_id = self._get_device_info_unique_id(device.hostname)
-
-        return self._build_device_info(device_name, unique_id, via_device_id)
+        return device.hostname
 
     def get_leased_devices(self) -> dict:
         return self._leased_devices

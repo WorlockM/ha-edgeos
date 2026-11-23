@@ -82,8 +82,10 @@ class IntegrationBaseEntity(CoordinatorEntity):
 
             device_info = coordinator.get_device_info(entity_description, item_id)
 
+            device_name = coordinator.get_device_name(entity_description, item_id)
+
             entity_name = coordinator.config_manager.get_entity_name(
-                entity_description, device_info
+                entity_description, device_name
             )
 
             unique_id_parts = [

@@ -62,6 +62,7 @@ def _async_get_diagnostics(
 
         data |= _async_device_as_dict(
             hass,
+            entry.entry_id,
             device.identifiers,
             device_data,
         )
@@ -84,6 +85,7 @@ def _async_get_diagnostics(
             devices=[
                 _async_device_as_dict(
                     hass,
+                    entry.entry_id,
                     coordinator.get_device_identifiers(
                         DeviceTypes.DEVICE, item.get(DEVICE_DATA_MAC)
                     ),
@@ -94,6 +96,7 @@ def _async_get_diagnostics(
             interfaces=[
                 _async_device_as_dict(
                     hass,
+                    entry.entry_id,
                     coordinator.get_device_identifiers(
                         DeviceTypes.INTERFACE, item.get(INTERFACE_DATA_NAME)
                     ),
@@ -103,6 +106,7 @@ def _async_get_diagnostics(
             ],
             system=_async_device_as_dict(
                 hass,
+                entry.entry_id,
                 coordinator.get_device_identifiers(DeviceTypes.SYSTEM),
                 system_data,
             ),
@@ -113,13 +117,21 @@ def _async_get_diagnostics(
 
 @callback
 def _async_device_as_dict(
-    hass: HomeAssistant, identifiers, additional_data: dict
+    hass: HomeAssistant, entry_id: str, identifiers, additional_data: dict
 ) -> dict[str, Any]:
     """Represent an EdgeOS based device as a dictionary."""
     device_registry = dr.async_get(hass)
     entity_registry = er.async_get(hass)
 
-    ha_device = device_registry.async_get_device(identifiers=identifiers)
+    ha_device = None
+    for identifier in identifiers:
+        ha_device = device_registry.async_get_device_by_identifier(
+            identifier, entry_id
+        )
+
+        if ha_device is not None:
+            break
+
     data = {}
 
     if ha_device:

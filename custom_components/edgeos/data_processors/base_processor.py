@@ -63,31 +63,36 @@ class BaseProcessor:
 
         return DEFAULT_NAME, self._hostname
 
+    def get_device_name(self, item_id: str | None = None) -> str:
+        """Name of the device, as used in its device info."""
+        return self._get_device_info_name(self._get_device_key(item_id))
+
+    def get_device_identifier(self, item_id: str | None = None) -> tuple[str, str]:
+        """Identifier of the device, as used in its device info."""
+        unique_id = self._get_device_info_unique_id(self._get_device_key(item_id))
+
+        return DEFAULT_NAME, unique_id
+
     def get_device_info(
         self, item_id: str | None = None, via_device_id: str | None = None
-    ) -> DeviceInfo:
-        device_name = self._get_device_info_name(item_id)
-
-        unique_id = self._get_device_info_unique_id(item_id)
-
-        return self._build_device_info(device_name, unique_id, via_device_id)
-
-    def _build_device_info(
-        self, device_name: str, unique_id: str, via_device_id: str | None
     ) -> DeviceInfo:
         # Only pass via_device_id when the parent is known: an explicit None
         # would remove an existing link in the device registry.
         via_link = {} if via_device_id is None else {"via_device_id": via_device_id}
 
         device_info = DeviceInfo(
-            identifiers={(DEFAULT_NAME, unique_id)},
-            name=device_name,
+            identifiers={self.get_device_identifier(item_id)},
+            name=self.get_device_name(item_id),
             model=self.processor_type,
             manufacturer=DEFAULT_NAME,
             **via_link,
         )
 
         return device_info
+
+    def _get_device_key(self, item_id: str | None = None) -> str | None:
+        """The part of the device name and identifier that identifies the item."""
+        return item_id
 
     def _get_device_info_name(self, item_id: str | None = None):
         parts = [self._hostname, self.processor_type, item_id]

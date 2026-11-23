@@ -8,7 +8,6 @@ from homeassistant.config_entries import STORAGE_VERSION, ConfigEntry
 from homeassistant.const import CONF_NAME, CONF_PASSWORD, CONF_USERNAME, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import translation
-from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.json import JSONEncoder
 from homeassistant.helpers.storage import Store
 
@@ -202,11 +201,10 @@ class ConfigManager:
     def get_entity_name(
         self,
         entity_description: IntegrationEntityDescription,
-        device_info: DeviceInfo,
+        device_name: str,
     ) -> str:
         entity_key = entity_description.key
 
-        device_name = device_info.get("name")
         platform = entity_description.platform
 
         translated_name = self.get_translation(

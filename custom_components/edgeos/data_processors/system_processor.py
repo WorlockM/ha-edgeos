@@ -66,14 +66,18 @@ class SystemProcessor(BaseProcessor):
         """The system device is the parent of all other devices."""
         return None
 
+    def get_device_name(self, item_id: str | None = None) -> str:
+        return self._system.hostname.upper()
+
+    def get_device_identifier(self, item_id: str | None = None) -> tuple[str, str]:
+        return DEFAULT_NAME, self.get_device_name()
+
     def get_device_info(
         self, item_id: str | None = None, via_device_id: str | None = None
     ) -> DeviceInfo:
-        name = self._system.hostname.upper()
-
         device_info = DeviceInfo(
-            identifiers={(DEFAULT_NAME, name)},
-            name=name,
+            identifiers={self.get_device_identifier()},
+            name=self.get_device_name(),
             model=self._system.product,
             manufacturer=MANUFACTURER,
             hw_version=self._system.fw_version,

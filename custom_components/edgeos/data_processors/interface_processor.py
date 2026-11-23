@@ -1,8 +1,6 @@
 import logging
 import sys
 
-from homeassistant.helpers.device_registry import DeviceInfo
-
 from ..common.consts import (
     ADDRESS_LIST,
     API_DATA_INTERFACES,
@@ -72,16 +70,8 @@ class InterfaceProcessor(BaseProcessor):
 
         return interface_data
 
-    def get_device_info(
-        self, item_id: str | None = None, via_device_id: str | None = None
-    ) -> DeviceInfo:
-        interface_name = item_id.upper()
-
-        device_name = self._get_device_info_name(interface_name)
-
-        unique_id = self._get_device_info_unique_id(interface_name)
-
-        return self._build_device_info(device_name, unique_id, via_device_id)
+    def _get_device_key(self, item_id: str | None = None) -> str | None:
+        return item_id.upper()
 
     def _process_api_data(self):
         super()._process_api_data()
