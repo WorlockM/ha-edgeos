@@ -8,7 +8,6 @@ from ..common.consts import (
     API_DATA_SYSTEM,
     DATA_SYSTEM_SERVICE,
     DATA_SYSTEM_SERVICE_DHCP_SERVER,
-    DEFAULT_NAME,
     DEVICE_DATA_MAC,
     DHCP_SERVER_IP_ADDRESS,
     DHCP_SERVER_LEASES,
@@ -67,21 +66,15 @@ class DeviceProcessor(BaseProcessor):
 
         return interface_data
 
-    def get_device_info(self, item_id: str | None = None) -> DeviceInfo:
+    def get_device_info(
+        self, item_id: str | None = None, via_device_id: str | None = None
+    ) -> DeviceInfo:
         device = self.get_data(item_id)
         device_name = self._get_device_info_name(device.hostname)
 
         unique_id = self._get_device_info_unique_id(device.hostname)
 
-        device_info = DeviceInfo(
-            identifiers={(DEFAULT_NAME, unique_id)},
-            name=device_name,
-            model=self.processor_type,
-            manufacturer=DEFAULT_NAME,
-            via_device=(DEFAULT_NAME, self._hostname),
-        )
-
-        return device_info
+        return self._build_device_info(device_name, unique_id, via_device_id)
 
     def get_leased_devices(self) -> dict:
         return self._leased_devices

@@ -7,7 +7,6 @@ from ..common.consts import (
     ADDRESS_LIST,
     API_DATA_INTERFACES,
     API_DATA_SYSTEM,
-    DEFAULT_NAME,
     FALSE_STR,
     INTERFACE_DATA_ADDRESS,
     INTERFACE_DATA_AGING,
@@ -73,22 +72,16 @@ class InterfaceProcessor(BaseProcessor):
 
         return interface_data
 
-    def get_device_info(self, item_id: str | None = None) -> DeviceInfo:
+    def get_device_info(
+        self, item_id: str | None = None, via_device_id: str | None = None
+    ) -> DeviceInfo:
         interface_name = item_id.upper()
 
         device_name = self._get_device_info_name(interface_name)
 
         unique_id = self._get_device_info_unique_id(interface_name)
 
-        device_info = DeviceInfo(
-            identifiers={(DEFAULT_NAME, unique_id)},
-            name=device_name,
-            model=self.processor_type,
-            manufacturer=DEFAULT_NAME,
-            via_device=(DEFAULT_NAME, self._hostname),
-        )
-
-        return device_info
+        return self._build_device_info(device_name, unique_id, via_device_id)
 
     def _process_api_data(self):
         super()._process_api_data()

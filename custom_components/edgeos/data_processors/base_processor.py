@@ -55,17 +55,36 @@ class BaseProcessor:
 
             _LOGGER.log(log_level, message)
 
-    def get_device_info(self, item_id: str | None = None) -> DeviceInfo:
+    @property
+    def via_identifier(self) -> tuple[str, str] | None:
+        """Identifier of the parent (system) device, None if there is none."""
+        if self._hostname is None:
+            return None
+
+        return DEFAULT_NAME, self._hostname
+
+    def get_device_info(
+        self, item_id: str | None = None, via_device_id: str | None = None
+    ) -> DeviceInfo:
         device_name = self._get_device_info_name(item_id)
 
         unique_id = self._get_device_info_unique_id(item_id)
+
+        return self._build_device_info(device_name, unique_id, via_device_id)
+
+    def _build_device_info(
+        self, device_name: str, unique_id: str, via_device_id: str | None
+    ) -> DeviceInfo:
+        # Only pass via_device_id when the parent is known: an explicit None
+        # would remove an existing link in the device registry.
+        via_link = {} if via_device_id is None else {"via_device_id": via_device_id}
 
         device_info = DeviceInfo(
             identifiers={(DEFAULT_NAME, unique_id)},
             name=device_name,
             model=self.processor_type,
             manufacturer=DEFAULT_NAME,
-            via_device=(DEFAULT_NAME, self._hostname),
+            **via_link,
         )
 
         return device_info

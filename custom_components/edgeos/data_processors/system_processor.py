@@ -61,7 +61,14 @@ class SystemProcessor(BaseProcessor):
     def get(self) -> EdgeOSSystemData:
         return self._system
 
-    def get_device_info(self, item_id: str | None = None) -> DeviceInfo:
+    @property
+    def via_identifier(self) -> tuple[str, str] | None:
+        """The system device is the parent of all other devices."""
+        return None
+
+    def get_device_info(
+        self, item_id: str | None = None, via_device_id: str | None = None
+    ) -> DeviceInfo:
         name = self._system.hostname.upper()
 
         device_info = DeviceInfo(

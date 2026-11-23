@@ -33,7 +33,7 @@ Provides an integration between EdgeOS (Ubiquiti) routers to Home Assistant.
 #### Requirements
 
 - EdgeRouter with at least firmware version 2.0 (this fork targets EdgeOS 3.x)
-- Home Assistant 2024.7 or newer
+- Home Assistant 2026.8 or newer
 - EdgeRouter User with 'Operator' level access or higher
 - Traffic Analysis set to 'Enabled' (both `dpi` and `export` enabled under `system/traffic-analysis`)
 - To enable / disable interfaces an `admin` role is a required

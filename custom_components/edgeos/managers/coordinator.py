@@ -400,9 +400,35 @@ class Coordinator(DataUpdateCoordinator):
     ) -> DeviceInfo:
         processor = self._processors[entity_description.device_type]
 
-        device_info = processor.get_device_info(item_id)
+        via_device_id = self._get_via_device_id(processor)
+
+        device_info = processor.get_device_info(item_id, via_device_id=via_device_id)
 
         return device_info
+
+    def _get_via_device_id(self, processor: BaseProcessor) -> str | None:
+        """Return the registry id of the parent (system) device, if registered.
+
+        On first setup the system device may not be registered yet; the link is
+        then left out and set on a later setup (e.g. after a restart).
+        """
+        via_identifier = processor.via_identifier
+
+        if via_identifier is None:
+            return None
+
+        device_registry = dr.async_get(self.hass)
+
+        parent = device_registry.async_get_device_by_identifier(
+            via_identifier, self._config_manager.entry_id
+        )
+
+        if parent is None:
+            _LOGGER.debug(f"Parent device {via_identifier} is not registered yet")
+
+            return None
+
+        return parent.id
 
     def get_data(
         self,
