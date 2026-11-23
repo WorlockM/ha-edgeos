@@ -280,7 +280,8 @@ class RestAPI:
         return result
 
     async def update(self):
-        
+        _LOGGER.debug(f"Updating data from device ({self._config_data.hostname})")
+
         if self.status == ConnectivityStatus.Failed:
             await self.initialize()
 
@@ -424,8 +425,12 @@ class RestAPI:
 
                     if response is not None:
                         _LOGGER.debug(f"Heartbeat response: {response}")
+
                         self._last_valid = ts
-                
+            else:
+                _LOGGER.debug(
+                    "Ignoring request to send heartbeat, Reason: closed session"
+                )
         except Exception as ex:
             exc_type, exc_obj, tb = sys.exc_info()
             line_number = tb.tb_lineno
@@ -531,6 +536,7 @@ class RestAPI:
     async def _load_general_data(self, key):
         try:
             if self.status == ConnectivityStatus.Connected:
+                _LOGGER.debug(f"Loading {key} data")
 
                 clean_item = key.replace(STRING_DASH, STRING_UNDERSCORE)
 

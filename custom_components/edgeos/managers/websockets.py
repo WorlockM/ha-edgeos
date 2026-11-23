@@ -447,8 +447,10 @@ class WebSockets:
 
     def _handle_export(self, data):
         try:
+            _LOGGER.debug(f"Handle {WS_EXPORT_KEY} data")
 
             if data is None or data == "":
+                _LOGGER.debug(f"{WS_EXPORT_KEY} is empty")
                 return
 
             for device_ip in data:
@@ -487,8 +489,10 @@ class WebSockets:
 
     def _handle_interfaces(self, data):
         try:
+            _LOGGER.debug(f"Handle {WS_INTERFACES_KEY} data")
 
             if data is None or data == "":
+                _LOGGER.debug(f"{WS_INTERFACES_KEY} is empty")
                 return
 
             for name in data:
@@ -529,8 +533,10 @@ class WebSockets:
 
     def _handle_system_stats(self, data):
         try:
+            _LOGGER.debug(f"Handle {WS_SYSTEM_STATS_KEY} data")
 
             if data is None or data == "":
+                _LOGGER.debug(f"{WS_SYSTEM_STATS_KEY} is empty")
                 return
 
             self.data[WS_SYSTEM_STATS_KEY] = data
@@ -544,8 +550,10 @@ class WebSockets:
 
     def _handle_discover(self, data):
         try:
+            _LOGGER.debug(f"Handle {WS_DISCOVER_KEY} data")
 
             if data is None or data == "":
+                _LOGGER.debug(f"{WS_DISCOVER_KEY} is empty")
                 return
 
             devices_data = data.get(DEVICE_LIST, [])
