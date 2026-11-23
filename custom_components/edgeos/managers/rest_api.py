@@ -296,7 +296,6 @@ class RestAPI:
             self._async_dispatcher_send(SIGNAL_DATA_CHANGED)
 
     async def login(self):
-        
         try:
             username = self._config_data.username
             password = self._config_data.password
@@ -444,7 +443,6 @@ class RestAPI:
         if not is_valid:
             self._set_status(ConnectivityStatus.Disconnected)
 
-
     def _parse_interfaces_from_get_dict(self, get_dict: dict | None) -> list[str]:
         """Extract interface names from the GET section (EdgeOS 3.x)."""
         names: list[str] = []
@@ -486,7 +484,11 @@ class RestAPI:
             if names:
                 self.data[API_DATA_INTERFACES] = {n: True for n in names}
         except Exception as ex:
-            _LOGGER.debug("IFACES: derive failed: %r", ex, exc_info=True)
+            _LOGGER.warning(
+                "Failed to derive interface names from system data: %r",
+                ex,
+                exc_info=True,
+            )
 
     async def _load_system_data(self):
         _LOGGER.debug("Fetching system data")
@@ -504,7 +506,11 @@ class RestAPI:
                     if sid and not self.data.get(API_DATA_SESSION_ID):
                         self.data[API_DATA_SESSION_ID] = sid
                 except Exception as ex:
-                    _LOGGER.debug("SYS: failed to capture SESSION_ID: %r", ex, exc_info=True)
+                    _LOGGER.warning(
+                        "Failed to read SESSION_ID from system data: %r",
+                        ex,
+                        exc_info=True,
+                    )
 
                 if result_json is not None:
                     if RESPONSE_SUCCESS_KEY in result_json:
@@ -514,7 +520,9 @@ class RestAPI:
 
                         if success_key == TRUE_STR:
                             if API_GET.upper() in result_json:
-                                self.data[API_DATA_SYSTEM] = result_json.get(API_GET.upper(), {})
+                                self.data[API_DATA_SYSTEM] = result_json.get(
+                                    API_GET.upper(), {}
+                                )
                                 self._update_interfaces_from_system_cache()
                         else:
                             error_message = result_json[RESPONSE_ERROR_KEY]
