@@ -1,6 +1,5 @@
+from enum import StrEnum
 import logging
-
-from homeassistant.const import StrEnum
 
 
 class ConnectivityStatus(StrEnum):
